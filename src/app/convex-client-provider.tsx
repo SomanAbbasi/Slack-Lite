@@ -7,17 +7,17 @@ import type { ReactNode } from "react";
 const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
 
 if (!convexUrl) {
-  throw new Error(
-    "Missing NEXT_PUBLIC_CONVEX_URL. Run `pnpm dev:backend` (convex dev) to generate .env.local, or set NEXT_PUBLIC_CONVEX_URL manually.",
-  );
+    throw new Error(
+        "Missing NEXT_PUBLIC_CONVEX_URL. Run `pnpm dev:backend` (convex dev) to generate .env.local, or set NEXT_PUBLIC_CONVEX_URL manually.",
+    );
 }
 
 const convex = new ConvexReactClient(convexUrl);
 
 export default function ConvexClientProvider({
-  children,
+    children,
 }: {
-  children: ReactNode;
+    children: ReactNode;
 }) {
-  return <ConvexAuthNextjsProvider client={convex}>{children}</ConvexAuthNextjsProvider>;
+    return <ConvexAuthNextjsProvider client={convex}>{children}</ConvexAuthNextjsProvider>;
 }
