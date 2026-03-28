@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev --webpack",
     "dev:turbo": "next dev",
+    "dev:backend": "convex dev",
+    "convex:dashboard": "convex dashboard",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -15,6 +17,8 @@
   "dependencies": {
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "convex": "^1.33.1",
+    "@convex-dev/auth": "^0.0.91",
     "lucide-react": "^1.7.0",
     "next": "16.2.1",
     "radix-ui": "^1.4.3",

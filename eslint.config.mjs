@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+
+    // Convex generated code:
+    "convex/_generated/**",
+
+    // Accidental scaffold (kept as backup):
+    "slackLiteDb/**",
   ]),
 ]);
 
