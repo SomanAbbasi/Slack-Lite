@@ -11,6 +11,8 @@ import { Separator } from '@/components/ui/separator'
 import { SignInFlow } from './types';
 
 import { useAuthActions } from "@convex-dev/auth/react";
+import { Eye, EyeOff, TriangleAlert } from 'lucide-react';
+import { getAuthErrorMessage, getProviderErrorMessage } from '../auth-error';
 
 interface SignInCardProps {
     setState: React.Dispatch<React.SetStateAction<SignInFlow>>;
@@ -24,10 +26,41 @@ export const SignInCard = ({ setState }: SignInCardProps) => {
 
     const [email,setEmail]=useState("");
     const [password,setPassword]=useState("");
+    const [error,setError]=useState("");
+
+    const [showPassword, setShowPassword] = useState(false);
+
+    const [pending,setPending]=useState(false);
+
+    const onPasswordSignIn=(e:React.FormEvent<HTMLFormElement>)=>{
+        e.preventDefault();
+
+        setError("");
+        setPending(true);
+        signIn("password",{email,password,flow:"signIn"})
+        .catch((err)=>{
+            setError(getAuthErrorMessage(err, { flow: "signIn" }));
+
+        })  
+        .finally(()=>{
+            setPending(false);
+        })
+
+    }
 
     const onProviderSignIn=(value:"github" | "google")=>
     {
-        signIn(value);
+        setError("");
+        setPending(true);
+        signIn(value)
+        .catch((err)=>{
+            setError(getProviderErrorMessage(value));
+            void err;
+        })
+        .finally(()=>{
+            setPending(false);
+        })
+
     };
 
     return (
@@ -39,18 +72,28 @@ export const SignInCard = ({ setState }: SignInCardProps) => {
 
             </CardHeader>
 
+            {!!error && (
+                <div role='alert' aria-live='polite' className='bg-destructive/15 p-3 rounded-md flex items-center gap-x-2 text-sm text-destructive mb-6'>
+                    <TriangleAlert className='size-4'/>
+                    <p>{error}</p>
+                </div>
+            )}
+
 
             <CardContent className='space-y-5 px-0 pb-0'>
-                <form className='space-y-4' onSubmit={(e) => e.preventDefault()}>
+                <form onSubmit={onPasswordSignIn} className='space-y-4' >
 
                     <div className='space-y-2'>
                         <label className='text-sm font-medium' htmlFor='email'>Email</label>
                         <Input
                             id='email'
                             autoComplete='email'
-                            disabled={false}
+                            disabled={pending}
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) => {
+                                setEmail(e.target.value);
+                                if (error) setError("");
+                            }}
                             placeholder='name@company.com'
                             type='email'
                             required
@@ -59,19 +102,40 @@ export const SignInCard = ({ setState }: SignInCardProps) => {
 
                     <div className='space-y-2'>
                         <label className='text-sm font-medium' htmlFor='password'>Password</label>
-                        <Input
-                            id='password'
-                            autoComplete='current-password'
-                            disabled={false}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder='Enter your password'
-                            type='password'
-                            required
-                        />
+                        <div className='relative'>
+                            <Input
+                                key={showPassword ? 'password:text' : 'password:password'}
+                                id='password'
+                                autoComplete='current-password'
+                                disabled={pending}
+                                value={password}
+                                onChange={(e) => {
+                                    setPassword(e.target.value);
+                                    if (error) setError("");
+                                }}
+                                placeholder='Enter your password'
+                                type={showPassword ? 'text' : 'password'}
+                                className='pr-10'
+                                required
+                            />
+
+                            <Button
+                                type='button'
+                                variant='ghost'
+                                size='icon'
+                                disabled={pending}
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => setShowPassword((v) => !v)}
+                                aria-pressed={showPassword}
+                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                className='absolute right-1 top-1/2 z-10 -translate-y-1/2 text-muted-foreground hover:text-foreground'
+                            >
+                                {showPassword ? <EyeOff /> : <Eye />}
+                            </Button>
+                        </div>
                     </div>
 
-                    <Button type="submit" className='w-full' size='lg' disabled={false}>
+                    <Button type="submit" className='w-full' size='lg' disabled={pending}>
                         Sign in
                     </Button>
                 </form>
@@ -87,7 +151,7 @@ export const SignInCard = ({ setState }: SignInCardProps) => {
                 <div className='flex flex-col gap-y-2.5'>
                     <Button
 
-                        disabled={false}
+                        disabled={pending}
                         onClick={() => onProviderSignIn("google")}
                         variant="outline"
                         size="lg"
@@ -99,7 +163,7 @@ export const SignInCard = ({ setState }: SignInCardProps) => {
 
                     <Button
 
-                        disabled={false}
+                        disabled={pending}
                         onClick={() => onProviderSignIn("github")}
                         variant="outline"
                         size="lg"
