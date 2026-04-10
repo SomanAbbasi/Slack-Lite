@@ -7,13 +7,20 @@ import { authTables } from "@convex-dev/auth/server";
 // The schema provides more precise TypeScript types.
 export default defineSchema({
   ...authTables,
-  workspaces:defineTable({
-    name:v.string(),
-    userId:v.id("users"),
-    joinCode:v.string(),
+  workspaces: defineTable({
+    name: v.string(),
+    userId: v.id("users"),
+    joinCode: v.string(),
+  }),
 
+  // Used by `src/app/test/page.tsx`.
+  tasks: defineTable({
+    text: v.string(),
+    isCompleted: v.optional(v.boolean()),
+  }),
 
-
-  })
-  
+  // Example table used by `convex/myFunctions.ts`.
+  numbers: defineTable({
+    value: v.number(),
+  }),
 });

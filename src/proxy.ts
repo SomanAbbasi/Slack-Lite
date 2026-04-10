@@ -3,7 +3,7 @@ import {
   createRouteMatcher,
   nextjsMiddlewareRedirect,
 } from "@convex-dev/auth/nextjs/server";
- 
+
 const isSignInPage = createRouteMatcher(["/auth"]);
 const isPageRoute = createRouteMatcher(["/(.*)"]);
 
@@ -29,9 +29,9 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
     return nextjsMiddlewareRedirect(request, "/auth");
   }
 });
- 
+
 export const config = {
-  // The following matcher runs middleware on all routes
+  // The following matcher runs proxy on all routes
   // except static assets.
   matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
 };

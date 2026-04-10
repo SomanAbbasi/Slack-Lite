@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
-    "dev:turbo": "next dev",
+    "dev": "NODE_OPTIONS=\"--no-network-family-autoselection --dns-result-order=ipv4first\" next dev --webpack",
+    "dev:turbo": "NODE_OPTIONS=\"--no-network-family-autoselection --dns-result-order=ipv4first\" next dev",
+    "dev:stop": "node scripts/stop-next-dev.mjs",
+    "dev:restart": "pnpm run dev:stop && pnpm run dev",
     "dev:backend": "convex dev",
     "convex:dashboard": "convex dashboard",
-    "build": "next build",
-    "start": "next start",
+    "build": "NODE_OPTIONS=\"--no-network-family-autoselection --dns-result-order=ipv4first\" next build",
+    "start": "NODE_OPTIONS=\"--no-network-family-autoselection --dns-result-order=ipv4first\" next start",
     "lint": "eslint"
   },
   "engines": {

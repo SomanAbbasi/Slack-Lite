@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ConvexClientProvider from "./convex-client-provider";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
+import { CreateWorkspaceModal } from "@/features/auth/workspaces/components/create-workspace-modal";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <ConvexAuthNextjsServerProvider>
+          <CreateWorkspaceModal/>
           <ConvexClientProvider>{children}</ConvexClientProvider>
         </ConvexAuthNextjsServerProvider>
       </body>
