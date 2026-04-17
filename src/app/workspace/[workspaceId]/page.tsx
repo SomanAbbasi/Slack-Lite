@@ -2,15 +2,19 @@
 
 "use client";
 
-import { useParams } from "next/navigation";
+import { useGetWorkspace } from "@/features/auth/workspaces/api/use-get-workspace";
+import { useWorkspaceId } from "@/hooks/use-workspace-id";
 
 const WorkspaceIdPage = () => {
-  const params = useParams<{ workspaceId: string }>();
-  const workspaceId = params?.workspaceId;
+  const workspaceId =useWorkspaceId();
+  const {data}=useGetWorkspace({id:workspaceId});
+
+ //   const params=useParams();
 
   return (
+
     <div>
-      ID:{workspaceId}
+      Data:{JSON.stringify(data)}
     </div>
   )
 }
