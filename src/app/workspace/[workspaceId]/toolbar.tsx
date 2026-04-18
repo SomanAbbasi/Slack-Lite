@@ -3,32 +3,33 @@
 import { Button } from "@/components/ui/button"
 import { useGetWorkspace } from "@/features/auth/workspaces/api/use-get-workspace"
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
-import { Ghost, Search } from "lucide-react"
-import { Info } from "lucide-react"
+import { Info, Search } from "lucide-react"
 export const Toolbar = () => {
 
     const workspaceId=useWorkspaceId();
     const {data}=useGetWorkspace({id:workspaceId});
 
-  return (
-    <nav className="bg-[#481349] flex items-center justify-between h-10 p-1.5" >
-        <div className="flex-1">
-            <div className="min-w-[280px] mx-[642px] grow-[2] shrink">
-                <Button size="sm" className="bg-accent/25 hover:bg-accent-25 w-full justify-start h-7 px-2">
-                    <Search className="size-4 text-white mr-2"/>
-                    <span className="text-white text-xs">
-                        Search {data?.name}
-                    </span>
+    return (
+        <nav className="bg-[#481349] flex h-10 items-center gap-2 px-2">
+            <div className="flex-1" />
+
+            <div className="flex flex-1 justify-center">
+                <div className="w-full min-w-[280px] max-w-md">
+                    <Button
+                        size="sm"
+                        className="h-7 w-full justify-start bg-accent/25 px-2 hover:bg-accent/25"
+                    >
+                        <Search className="mr-2 size-4 text-white" />
+                        <span className="text-xs text-white">Search {data?.name}</span>
+                    </Button>
+                </div>
+            </div>
+
+            <div className="flex flex-1 items-center justify-end">
+                <Button variant="transparent" size="iconSm" aria-label="Workspace info">
+                    <Info className="size-5 text-white" />
                 </Button>
             </div>
-        </div>
-
-        <div className="mt-auto flex-1 flex items-center justify-end">
-            <Button variant="transparent" size="iconSm">
-                <Info className="size-5 text-white "/>
-            </Button>
-
-        </div>
         </nav>
-  )
+    )
 }
