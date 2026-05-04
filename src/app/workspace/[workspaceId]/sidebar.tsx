@@ -1,15 +1,19 @@
 
 import { UserButton } from "@/features/auth/components/user-button"
 import { WorkSpaceSwitcher } from "./workspace-switcher"
+import { SidebarButton } from "./sidebar-button"
+import { Home } from "lucide-react"
+
 export const Sidebar=()=>{
 
     return (
         <aside className="w-[70px] h-full bg-[#481349] flex flex-col gap-y-4 items-center pt-[0px] pb-4px">
 
-            <div>
                 <WorkSpaceSwitcher/>
 
-            </div>
+                <SidebarButton icon={Home} label="Home" isActive/>
+
+
             <div className="flex flex-col items-center justify-center gap-y-1 mt-auto">
                 <UserButton/>
             </div>

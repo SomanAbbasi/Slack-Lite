@@ -63,14 +63,16 @@ export const WorkSpaceSwitcher = () => {
                 {filteredWorkspaces?.map((workspace) => (
                     <DropdownMenuItem
                         key={workspace._id}
-                        className="cursor-pointer capitalize"
+                        className="cursor-pointer capitalize overflow-hidden "
                         onClick={() => router.push(`/workspace/${workspace._id}`)}
                     >
-                        <div>
+                        <div className="shrink-0 size-9 relative overflow-hidden bg-[#616061] text-white font-semibold text-lg rounded-md flex items-center justify-center mr-2">
                             {workspace.name.charAt(0).toUpperCase()}
 
                         </div>
-                        {workspace.name}
+                        <p className="truncate">
+                            {workspace.name}
+                        </p>
                     </DropdownMenuItem>
                 ))}
 
