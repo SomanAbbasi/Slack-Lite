@@ -92,8 +92,9 @@ export const getById = query({
             .withIndex("by_workspace_id_user_id", (q) =>
                 q.eq("workspaceId", args.id).eq("userId", userId))
             .unique();
-        if (!member)
-            return []
+        if (!member) {
+            return null;
+        }
         return await ctx.db.get(args.id);
     }
 })
