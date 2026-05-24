@@ -24,19 +24,17 @@ const WorkspaceIdLayout = ({ children }: WorkspaceIdLayoutProps) => {
                 <Sidebar />
                 <ResizablePanelGroup 
                 orientation="horizontal"
-                autoSave="sa-workspace-layout"
-                
                 >
                     <ResizablePanel
-                    defaultSize={20}
-                    minSize={11}
+                    defaultSize={30}
+                    minSize={20}
                     className="bg-[#5E2C5F]"
                     
                     >
                     <WorkspaceSidebar/>
                     </ResizablePanel>
                     <ResizableHandle withHandle/>
-                    <ResizablePanel minSize={20}>
+                    <ResizablePanel defaultSize={70} minSize={40}>
                         {children}
 
 
