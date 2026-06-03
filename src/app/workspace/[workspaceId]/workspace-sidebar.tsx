@@ -3,12 +3,13 @@ import { useCurrentMember } from "@/features/members/user-current-member";
 import { useWorkspaceId } from "@/hooks/use-workspace-id"
 import { AlertTriangle, HashIcon, Loader, MessageSquareText, SendHorizonal, Sidebar } from "lucide-react";
 import { WorkspaceHeader } from "./workspace-header";
-import { current } from "../../../../convex/memebers";
 import { SidebarItem } from "../sidebar-items";
 import { useGetChannels } from "@/features/channels/api/use-get-channels";
 import { internalMutation } from "../../../../convex/_generated/server";
 import { WorkspaceSection } from "./workspace-section";
-
+import { current } from "../../../../convex/memebers";
+import { useGetMembers } from "@/features/members/use-get-members";
+import { UserItem } from "./user-item";
 
 
 export const WorkspaceSidebar = () => {
@@ -17,6 +18,10 @@ export const WorkspaceSidebar = () => {
     const { data: member, isLoading: memberLoading } = useCurrentMember({ workspaceId });
     const { data: workspace, isLoading: workspaceLoading } = useGetWorkspace({ id: workspaceId });
     const { data: channels, isLoading: channelsLoading } = useGetChannels({ workspaceId });
+
+    const { data: members, isLoading: membersLoading } = useGetMembers({ workspaceId });
+
+
 
     if (workspaceLoading || memberLoading) {
         return (
@@ -35,7 +40,7 @@ export const WorkspaceSidebar = () => {
         )
     }
     return (
-        <div className="flex flex-col bg-[#5E2C5F] h-full">
+        <div className="flex flex-col bg-[#5E2C5F] h-full min-w-0">
             <WorkspaceHeader workspace={workspace} isAdmin={member.role === "admin"} />
 
             <div className="flex flex-col px-2 mt-3">
@@ -75,6 +80,30 @@ export const WorkspaceSidebar = () => {
                     />
                 ))}
             </WorkspaceSection>
+
+            <WorkspaceSection
+
+                labels="Direct Messages"
+                hint="New direct message"
+                onNew={() => { }}
+
+
+            >
+                {members?.map((item) => (
+                    <UserItem
+                        key={item._id}
+                        id={item._id}
+                        label={item.user.name}
+                        image={item.user.image}
+                    //variant
+
+
+                    />
+
+                ))}
+            </WorkspaceSection>
+
+
 
 
 

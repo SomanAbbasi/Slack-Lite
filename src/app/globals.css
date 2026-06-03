@@ -10,6 +10,10 @@ body,
   height:100%;
 }
 
+body {
+  overflow-y: auto;
+}
+
 
 @theme inline {
   --color-background: var(--background);

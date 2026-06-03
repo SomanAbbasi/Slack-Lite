@@ -8,6 +8,10 @@ import {
 
 import { Hint } from "@/components/hint";
 import { PlusIcon } from "lucide-react";
+import { useToggle } from "react-use";
+
+import { cn } from "@/lib/utils";
+
 
 interface WorkspaceSectionProps {
     labels: string;
@@ -26,6 +30,9 @@ export const WorkspaceSection = ({
 }: WorkspaceSectionProps) => {
 
 
+    const [on, toggle] = useToggle(true);
+
+
     return (
         <div className="flex flex-col mt-3 px-2">
 
@@ -35,10 +42,10 @@ export const WorkspaceSection = ({
                     variant="transparent"
                     className="p-0.5 text-sm text-[#f9edffcc] shrink-0-szie-6"
 
-
+                    onClick={toggle}
 
                 >
-                    <FaCaretDown className="size-4" />
+                    <FaCaretDown className={cn("size-4 transition-transform", on && "-rotate-90")} />
                 </Button>
 
                 <Button
@@ -61,9 +68,9 @@ export const WorkspaceSection = ({
                             className="opacity-0 group-hover:opacity-100 transition-opacity ml-aut0 p-0.5 text-sm text-[#f9edffcc] shrink-0 size-6"
 
                         >
-                        <PlusIcon
-                        className="size-5"
-                        />
+                            <PlusIcon
+                                className="size-5"
+                            />
 
                         </Button>
 
@@ -76,7 +83,7 @@ export const WorkspaceSection = ({
 
 
             </div>
-            {children}
+            {on &&children}
 
         </div>)
 }

@@ -19,22 +19,23 @@ const WorkspaceIdLayout = ({ children }: WorkspaceIdLayoutProps) => {
     return (
         <div className="h-full">
             <Toolbar />
-            <div className="flex h-[calc(100vh-40px)]">
+            <div className="flex h-[calc(100vh-40px)] overflow-hidden">
 
                 <Sidebar />
-                <ResizablePanelGroup 
+                <ResizablePanelGroup
                 orientation="horizontal"
+                className="min-w-0 flex-1"
                 >
                     <ResizablePanel
                     defaultSize={30}
                     minSize={20}
-                    className="bg-[#5E2C5F]"
+                    className="bg-[#5E2C5F] min-w-0"
                     
                     >
                     <WorkspaceSidebar/>
                     </ResizablePanel>
                     <ResizableHandle withHandle/>
-                    <ResizablePanel defaultSize={70} minSize={40}>
+                    <ResizablePanel defaultSize={70} minSize={40} className="min-w-0">
                         {children}
 
 
