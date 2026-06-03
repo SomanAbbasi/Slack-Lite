@@ -9,18 +9,17 @@ import {cva, type VariantProps} from "class-variance-authority";
 
 const sidebarItemVariants = cva(
     "flex items-center gap-2 justify-start font-normal h-7 px-[18px] text-sm overflow-hidden",
-  {
-    variants: {
-      variant: {
-        default: "text-[#9edffcc]",
-        active: "text-[#481349] bg-white/90 hover:bg-white/90",
-      },
-    },
-    defaultVariants:{
-        variant:"default",
-
+    {
+        variants: {
+            variant: {
+                default: "text-white",
+                active: "text-[#481349] bg-white/90 hover:bg-white/90",
+            },
+        },
+        defaultVariants: {
+            variant: "default",
+        },
     }
-  }
 );
 
 
@@ -57,7 +56,7 @@ export const SidebarItem=({
                 href={`/workspace/${workspaceId}/channel/${id}`}
                 className="flex items-center gap-2 w-full"
             >
-                <Icon className="size-3.5 shrink-0" />
+                <Icon className="size-3.5 shrink-0 text-white" />
                 <span className="text-sm truncate">{label}</span>
 
             

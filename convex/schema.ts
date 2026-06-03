@@ -35,5 +35,13 @@ export default defineSchema({
   .index("by_workspace_id_user_id",["workspaceId","userId"]),
 
 
+  channels:defineTable({
+    name:v.string(),
+    workspaceId:v.id("workspaces"),
+   // isPrivate:v.boolean()
+  })
+  .index("by_workspace_id",["workspaceId"]),
+
+
 
 });
