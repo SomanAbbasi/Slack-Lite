@@ -3,14 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS=\"--no-network-family-autoselection --dns-result-order=ipv4first\" next dev --webpack",
-    "dev:turbo": "NODE_OPTIONS=\"--no-network-family-autoselection --dns-result-order=ipv4first\" next dev",
+    "dev": "set NODE_OPTIONS=--no-network-family-autoselection --dns-result-order=ipv4first&& next dev --webpack",
+    "dev:turbo": "set NODE_OPTIONS=--no-network-family-autoselection --dns-result-order=ipv4first&& next dev",
     "dev:stop": "node scripts/stop-next-dev.mjs",
-    "dev:restart": "pnpm run dev:stop && pnpm run dev",
+    "dev:restart": "npm run dev:stop && npm run dev",
     "dev:backend": "convex dev",
+    "convex:dev": "convex dev",
     "convex:dashboard": "convex dashboard",
-    "build": "NODE_OPTIONS=\"--no-network-family-autoselection --dns-result-order=ipv4first\" next build",
-    "start": "NODE_OPTIONS=\"--no-network-family-autoselection --dns-result-order=ipv4first\" next start",
+    "build": "set NODE_OPTIONS=--no-network-family-autoselection --dns-result-order=ipv4first&& next build",
+    "start": "set NODE_OPTIONS=--no-network-family-autoselection --dns-result-order=ipv4first&& next start",
     "lint": "eslint"
   },
   "engines": {

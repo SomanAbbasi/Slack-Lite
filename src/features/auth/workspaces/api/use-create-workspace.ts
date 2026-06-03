@@ -2,7 +2,7 @@
 import { useMutation } from "convex/react";
 
 import { api } from "../../../../../convex/_generated/api";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Id } from "../../../../../convex/_generated/dataModel";
 
 type RequestType = { name: string }
@@ -21,6 +21,33 @@ export const useCreateWorkspace = () => {
     const [error, setError] = useState<Error | null>(null)
     const [status, setStatus] = useState<"success" | "error" | "settled" | "pending" | null>(null);
 
+    const isMountedRef = useRef(false);
+
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
+
+    const safeSetData = (value: ResponseType) => {
+        if (isMountedRef.current) {
+            setData(value);
+        }
+    };
+
+    const safeSetError = (value: Error | null) => {
+        if (isMountedRef.current) {
+            setError(value);
+        }
+    };
+
+    const safeSetStatus = (value: "success" | "error" | "settled" | "pending" | null) => {
+        if (isMountedRef.current) {
+            setStatus(value);
+        }
+    };
+
     // const [isPending, setIsPending] = useState(false);
     // const [isSuccess, setIsSuccess] = useState(false);
     // const [isError, setIsError] = useState(false);
@@ -36,10 +63,10 @@ export const useCreateWorkspace = () => {
 
     const mutate = useCallback(async (values: RequestType, options?: Options) => {
         try {
-            setData(null);
-            setError(null);
+            safeSetData(null);
+            safeSetError(null);
 
-            setStatus("pending");
+            safeSetStatus("pending");
 
 
             const response = await mutation(values);
@@ -47,7 +74,7 @@ export const useCreateWorkspace = () => {
             return response;
         }
         catch {
-            setStatus("error");
+            safeSetStatus("error");
 
             options?.onError?.(error as Error);
             if (options?.throwError) {
@@ -56,7 +83,7 @@ export const useCreateWorkspace = () => {
 
         }
         finally {
-            setStatus("settled");
+            safeSetStatus("settled");
 
             options?.onSettled?.();
 
