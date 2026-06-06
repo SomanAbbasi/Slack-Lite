@@ -1,9 +1,34 @@
 
 "use client";
 
-import { CreateWorkspaceModal
- } from "@/features/auth/workspaces/components/create-workspace-modal";
+import { useEffect, useState } from "react";
+
+import {
+    CreateWorkspaceModal
+} from "@/features/auth/workspaces/components/create-workspace-modal";
+import { CreateChannelModal } from "@/features/channels/components/create-channel-modal";
+
+
 
 export const Modals = () => {
-    return <CreateWorkspaceModal />
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+        return null;
+    }
+
+
+    return (
+        <>
+            <CreateChannelModal />
+
+            <CreateWorkspaceModal />
+
+        </>
+
+
+    )
 };

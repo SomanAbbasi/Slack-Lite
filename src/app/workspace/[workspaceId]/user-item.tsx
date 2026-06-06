@@ -74,7 +74,7 @@ export const UserItem = (
                 <AvatarImage className="rounded-md"
                 src={image}
                 />
-                <AvatarFallback className="rounded-md">
+                <AvatarFallback className="rounded-md bg-sky-500 text-white text-xs">
                     {avatarFallback}
 
                 </AvatarFallback>

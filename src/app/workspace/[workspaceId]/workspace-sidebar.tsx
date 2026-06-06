@@ -10,11 +10,16 @@ import { WorkspaceSection } from "./workspace-section";
 import { current } from "../../../../convex/memebers";
 import { useGetMembers } from "@/features/members/use-get-members";
 import { UserItem } from "./user-item";
+import { useCreateChannelModal } from "@/features/channels/store/use-create-channel-modal";
 
 
 export const WorkspaceSidebar = () => {
 
     const workspaceId = useWorkspaceId();
+
+    const [_open,setOpen]=useCreateChannelModal()
+
+
     const { data: member, isLoading: memberLoading } = useCurrentMember({ workspaceId });
     const { data: workspace, isLoading: workspaceLoading } = useGetWorkspace({ id: workspaceId });
     const { data: channels, isLoading: channelsLoading } = useGetChannels({ workspaceId });
@@ -66,7 +71,8 @@ export const WorkspaceSidebar = () => {
 
                 labels="Channels"
                 hint="New Channel"
-                onNew={() => { }}
+                onNew={member.role==="admin"?    () => setOpen(true):undefined
+                }
 
 
             >
