@@ -21,6 +21,7 @@ import { ChevronDown, ListFilter, SquarePen } from "lucide-react";
 import { Hint } from "@/components/hint";
 import { PreferencesModal } from "./preferences-modal";
 import { useState } from "react";
+import { InviteModal } from "./invite-modal";
 
 
 interface WorkspaceHeaderProps {
@@ -31,10 +32,20 @@ interface WorkspaceHeaderProps {
 export const WorkspaceHeader = ({ workspace, isAdmin }: WorkspaceHeaderProps) => {
 
     const [preferencesOpen,setpreferencesOpen]=useState(false);
+    const [inviteOpen,setInviteOpen ]=useState(false);
+
+
 
     return (
 
         <>
+        <InviteModal 
+        open={inviteOpen}
+        setOpen={setInviteOpen}
+
+        />
+
+
         <PreferencesModal open={preferencesOpen} setOpen={setpreferencesOpen} initialValue={workspace.name} />
 
 
@@ -74,7 +85,7 @@ export const WorkspaceHeader = ({ workspace, isAdmin }: WorkspaceHeaderProps) =>
 
                                 <DropdownMenuItem
                                     className="cursor-pointer py-2"
-                                    onClick={() => { }}
+                                    onClick={() => setInviteOpen(true)}
 
 
 
