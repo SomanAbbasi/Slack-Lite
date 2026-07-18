@@ -19,6 +19,7 @@ interface MessageListProps {
   memberImage?: string;
   channelName?: string;
   channelCreationTime?: number;
+  channelTopic?: string;
   variant?: "channel" | "thread" | "conversation";
   channelId?: Id<"channels">;
   conversationId?: Id<"conversations">;
@@ -30,6 +31,7 @@ export const MessageList = ({
   memberImage,
   channelName,
   channelCreationTime,
+  channelTopic,
   variant = "channel",
   channelId,
   conversationId,
@@ -47,6 +49,7 @@ export const MessageList = ({
 
   const canLoadMore = status === "CanLoadMore";
   const isLoadingMore = status === "LoadingMore";
+  const isLoadingFirst = results === undefined;
 
   useEffect(() => {
     const el = topRef.current;
@@ -64,6 +67,14 @@ export const MessageList = ({
     observer.observe(el);
     return () => observer.disconnect();
   }, [canLoadMore, loadMore]);
+
+  if (isLoadingFirst) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <Loader className="size-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   const groupedMessages = (results ?? []).reduce(
     (groups, message) => {
@@ -150,7 +161,11 @@ export const MessageList = ({
         </div>
       )}
       {variant === "channel" && channelName && channelCreationTime && (
-        <ChannelHero name={channelName} creationTime={channelCreationTime} />
+        <ChannelHero
+          name={channelName}
+          creationTime={channelCreationTime}
+          topic={channelTopic}
+        />
       )}
       {variant === "conversation" && (
         <ConversationHero name={memberName} image={memberImage} />

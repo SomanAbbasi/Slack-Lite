@@ -13,6 +13,7 @@ import { api } from "../../../../convex/_generated/api";
 import { Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useParentMessageId } from "@/features/messages/store/use-parent-message";
 
 interface ActivityModalProps {
   open: boolean;
@@ -22,6 +23,7 @@ interface ActivityModalProps {
 export const ActivityModal = ({ open, setOpen }: ActivityModalProps) => {
   const workspaceId = useWorkspaceId();
   const router = useRouter();
+  const [, setParentMessageId] = useParentMessageId();
   const notifications = useQuery(
     api.notifications.get,
     open ? { workspaceId } : "skip",
@@ -44,7 +46,11 @@ export const ActivityModal = ({ open, setOpen }: ActivityModalProps) => {
       <DialogContent className="max-w-md">
         <DialogHeader className="flex flex-row items-center justify-between space-y-0">
           <DialogTitle>Activity</DialogTitle>
-          <Button variant="outline" size="sm" onClick={() => void handleMarkRead()}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void handleMarkRead()}
+          >
             Mark all read
           </Button>
         </DialogHeader>
@@ -61,13 +67,26 @@ export const ActivityModal = ({ open, setOpen }: ActivityModalProps) => {
             notifications.map((notification) => (
               <button
                 key={notification._id}
+                type="button"
                 className={`w-full text-left rounded-lg border px-3 py-2 hover:bg-accent ${
                   notification.read ? "opacity-70" : "bg-sky-50"
                 }`}
                 onClick={() => {
                   setOpen(false);
-                  // Navigate to workspace home; message deep-links can be expanded later
-                  router.push(`/workspace/${workspaceId}`);
+                  if (notification.channelId) {
+                    router.push(
+                      `/workspace/${workspaceId}/channel/${notification.channelId}`,
+                    );
+                  } else if (notification.targetMemberId) {
+                    router.push(
+                      `/workspace/${workspaceId}/member/${notification.targetMemberId}`,
+                    );
+                  } else {
+                    router.push(`/workspace/${workspaceId}`);
+                  }
+                  if (notification.parentMessageId) {
+                    setParentMessageId(notification.parentMessageId);
+                  }
                 }}
               >
                 <p className="text-sm font-medium">

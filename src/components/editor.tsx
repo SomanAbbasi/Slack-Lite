@@ -2,8 +2,16 @@
 
 import { Button } from "@/components/ui/button";
 import { ImageIcon, SendHorizonal, Smile, XIcon } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const ACCEPTED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+];
 
 interface EditorProps {
   onSubmit: ({
@@ -32,9 +40,20 @@ export const Editor = ({
 }: EditorProps) => {
   const [value, setValue] = useState(defaultValue);
   const [image, setImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const imageElementRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!image) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(image);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [image]);
 
   const setRefs = (node: HTMLTextAreaElement | null) => {
     textareaRef.current = node;
@@ -58,7 +77,7 @@ export const Editor = ({
       }
       textareaRef.current?.focus();
     } catch {
-      toast.error("Failed to send message");
+      // Parent chat inputs own the error toast to avoid duplicates.
     } finally {
       setIsSubmitting(false);
     }
@@ -72,7 +91,7 @@ export const Editor = ({
         disabled={disabled || isSubmitting}
         onChange={(e) => setValue(e.target.value)}
         placeholder={placeholder}
-        className="min-h-[90px] max-h-[280px] w-full resize-none border-0 outline-none px-3 py-2 text-sm"
+        className="min-h-[90px] max-h-[280px] w-full resize-none border-0 outline-none px-3 py-2 text-sm font-sans"
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
@@ -81,7 +100,7 @@ export const Editor = ({
         }}
       />
 
-      {!!image && (
+      {!!previewUrl && (
         <div className="p-2">
           <div className="relative size-[62px] flex items-center justify-center group/image">
             <button
@@ -98,9 +117,9 @@ export const Editor = ({
             </button>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={URL.createObjectURL(image)}
+              src={previewUrl}
               alt="Uploaded"
-              className="rounded-xl overflow-hidden border object-cover"
+              className="rounded-xl overflow-hidden border object-cover size-[62px]"
             />
           </div>
         </div>
@@ -146,16 +165,37 @@ export const Editor = ({
             size="sm"
             className="bg-[#007a5a] hover:bg-[#007a5a]/80 text-white"
           >
-            {variant === "update" ? "Save" : <SendHorizonal className="size-4" />}
+            {variant === "update" ? (
+              "Save"
+            ) : (
+              <SendHorizonal className="size-4" />
+            )}
           </Button>
         </div>
       </div>
       <input
         type="file"
-        accept="image/*"
+        accept={ACCEPTED_IMAGE_TYPES.join(",")}
         ref={imageElementRef}
         className="hidden"
-        onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+        onChange={(e) => {
+          const file = e.target.files?.[0] ?? null;
+          if (!file) {
+            setImage(null);
+            return;
+          }
+          if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+            toast.error("Only JPEG, PNG, GIF, or WebP images are allowed");
+            e.target.value = "";
+            return;
+          }
+          if (file.size > MAX_IMAGE_BYTES) {
+            toast.error("Image must be 5MB or smaller");
+            e.target.value = "";
+            return;
+          }
+          setImage(file);
+        }}
       />
     </div>
   );

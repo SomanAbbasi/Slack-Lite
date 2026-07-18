@@ -70,8 +70,10 @@ export const Toolbar = () => {
             variant="transparent"
             size="iconSm"
             aria-label="Workspace info"
+            title="Workspace info"
+            disabled
           >
-            <Info className="size-5 text-white" />
+            <Info className="size-5 text-white opacity-60" />
           </Button>
         </div>
       </nav>
@@ -142,30 +144,47 @@ export const Toolbar = () => {
                 ))
               )}
             </div>
-            {!!messageResults?.length && (
+            {query.trim().length > 1 && (
               <div>
                 <p className="px-2 text-xs font-semibold text-muted-foreground mb-1">
                   Messages
                 </p>
-                {messageResults.map((message) => (
-                  <button
-                    key={message._id}
-                    className="w-full text-left px-2 py-1.5 rounded hover:bg-accent text-sm"
-                    onClick={() => {
-                      setOpen(false);
-                      if (message.channelId) {
-                        router.push(
-                          `/workspace/${workspaceId}/channel/${message.channelId}`,
-                        );
-                      }
-                    }}
-                  >
-                    <span className="font-medium">{message.user.name}: </span>
-                    <span className="text-muted-foreground truncate">
-                      {message.body}
-                    </span>
-                  </button>
-                ))}
+                {messageResults === undefined ? (
+                  <p className="px-2 text-sm text-muted-foreground">
+                    Searching messages...
+                  </p>
+                ) : messageResults.length === 0 ? (
+                  <p className="px-2 text-sm text-muted-foreground">
+                    No matching messages
+                  </p>
+                ) : (
+                  messageResults.map((message) => (
+                    <button
+                      key={message._id}
+                      type="button"
+                      className="w-full text-left px-2 py-1.5 rounded hover:bg-accent text-sm"
+                      onClick={() => {
+                        setOpen(false);
+                        if (message.channelId) {
+                          router.push(
+                            `/workspace/${workspaceId}/channel/${message.channelId}`,
+                          );
+                          return;
+                        }
+                        if (message.member?._id) {
+                          router.push(
+                            `/workspace/${workspaceId}/member/${message.member._id}`,
+                          );
+                        }
+                      }}
+                    >
+                      <span className="font-medium">{message.user.name}: </span>
+                      <span className="text-muted-foreground truncate">
+                        {message.body}
+                      </span>
+                    </button>
+                  ))
+                )}
               </div>
             )}
           </div>

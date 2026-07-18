@@ -12,7 +12,8 @@
     "convex:dashboard": "convex dashboard",
     "build": "set NODE_OPTIONS=--no-network-family-autoselection --dns-result-order=ipv4first&& next build",
     "start": "set NODE_OPTIONS=--no-network-family-autoselection --dns-result-order=ipv4first&& next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --experimental-strip-types --test tests/**/*.test.ts"
   },
   "engines": {
     "node": ">=20.9 <23"

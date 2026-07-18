@@ -52,15 +52,33 @@ export const toggle = mutation({
     if (message.memberId !== member._id) {
       const messageMember = await ctx.db.get(message.memberId);
       if (messageMember) {
-        await ctx.db.insert("notifications", {
-          workspaceId: message.workspaceId,
-          userId: messageMember.userId,
-          type: "reaction",
-          messageId: message._id,
-          actorMemberId: member._id,
-          body: `reacted ${value} to your message`,
-          read: false,
-        });
+        const existingNotification = await ctx.db
+          .query("notifications")
+          .withIndex("by_workspace_id_user_id", (q) =>
+            q
+              .eq("workspaceId", message.workspaceId)
+              .eq("userId", messageMember.userId),
+          )
+          .filter((q) =>
+            q.and(
+              q.eq(q.field("type"), "reaction"),
+              q.eq(q.field("messageId"), message._id),
+              q.eq(q.field("actorMemberId"), member._id),
+            ),
+          )
+          .first();
+
+        if (!existingNotification) {
+          await ctx.db.insert("notifications", {
+            workspaceId: message.workspaceId,
+            userId: messageMember.userId,
+            type: "reaction",
+            messageId: message._id,
+            actorMemberId: member._id,
+            body: `reacted ${value} to your message`,
+            read: false,
+          });
+        }
       }
     }
 
