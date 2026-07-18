@@ -7,31 +7,47 @@ import {
 const isSignInPage = createRouteMatcher(["/auth"]);
 const isPageRoute = createRouteMatcher(["/(.*)"]);
 
+const getSafeReturnTo = (request: Request) => {
+  const pathname = new URL(request.url).pathname;
+  const search = new URL(request.url).search;
+  if (!pathname.startsWith("/") || pathname.startsWith("//")) {
+    return "/";
+  }
+  if (pathname.startsWith("/auth")) {
+    return "/";
+  }
+  return `${pathname}${search}`;
+};
+
 export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
-  // Always allow Convex Auth endpoints.
-  // Convex Auth middleware already knows how to proxy and handle these routes.
   const pathname = request.nextUrl.pathname;
   if (pathname.startsWith("/api/auth")) {
     return;
   }
 
-  // If the user is already logged in, keep them out of the sign-in page.
   if (isSignInPage(request) && (await convexAuth.isAuthenticated())) {
+    const returnTo = request.nextUrl.searchParams.get("returnTo");
+    if (
+      returnTo &&
+      returnTo.startsWith("/") &&
+      !returnTo.startsWith("//") &&
+      !returnTo.startsWith("/auth")
+    ) {
+      return nextjsMiddlewareRedirect(request, returnTo);
+    }
     return nextjsMiddlewareRedirect(request, "/");
   }
 
-  // If the user is not logged in, they can only access /auth.
   if (
     isPageRoute(request) &&
     !isSignInPage(request) &&
     !(await convexAuth.isAuthenticated())
   ) {
-    return nextjsMiddlewareRedirect(request, "/auth");
+    const returnTo = encodeURIComponent(getSafeReturnTo(request));
+    return nextjsMiddlewareRedirect(request, `/auth?returnTo=${returnTo}`);
   }
 });
 
 export const config = {
-  // The following matcher runs proxy on all routes
-  // except static assets.
   matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
 };

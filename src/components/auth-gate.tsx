@@ -2,7 +2,13 @@
 
 import { useConvexAuth } from "convex/react";
 import { Loader } from "lucide-react";
-import type { ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { type ReactNode, useEffect } from "react";
+import {
+  clearStoredReturnTo,
+  getStoredReturnTo,
+} from "@/features/auth/components/auth-screen";
+import { isSafeReturnTo } from "@/lib/access";
 
 export const FullPageLoader = ({ label }: { label?: string }) => {
   return (
@@ -16,7 +22,18 @@ export const FullPageLoader = ({ label }: { label?: string }) => {
 };
 
 export const AuthGate = ({ children }: { children: ReactNode }) => {
-  const { isLoading } = useConvexAuth();
+  const { isLoading, isAuthenticated } = useConvexAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoading || !isAuthenticated) return;
+    const returnTo = getStoredReturnTo();
+    if (!isSafeReturnTo(returnTo)) return;
+    clearStoredReturnTo();
+    if (window.location.pathname.startsWith("/auth")) {
+      router.replace(returnTo);
+    }
+  }, [isLoading, isAuthenticated, router]);
 
   if (isLoading) {
     return <FullPageLoader label="Loading..." />;

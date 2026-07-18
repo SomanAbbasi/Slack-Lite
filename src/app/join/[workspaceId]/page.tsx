@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useGetWorkspaceInfo } from "@/features/auth/workspaces/api/use-get-workspace-info";
 import { useJoinWorkspace } from "@/features/auth/workspaces/api/use-join-workspace";
 import { useWorkspaceId } from "@/hooks/use-workspace-id";
-import { Hash, Loader } from "lucide-react";
+import { Hash, Loader, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -54,6 +54,22 @@ const JoinPage = () => {
     );
   }
 
+  if (!data) {
+    return (
+      <div className="h-full flex flex-col gap-y-4 items-center justify-center bg-white p-8">
+        <TriangleAlert className="size-6 text-muted-foreground" />
+        <h1 className="text-xl font-semibold">Invite not found</h1>
+        <p className="text-sm text-muted-foreground text-center max-w-sm">
+          This workspace invite link is invalid or the workspace no longer
+          exists.
+        </p>
+        <Button asChild variant="outline">
+          <Link href="/">Back to home</Link>
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex flex-col gap-y-8 items-center justify-center bg-white p-8 rounded-lg shadow-md">
       <div className="size-14 rounded-xl bg-[#4A154B] text-white flex items-center justify-center">
@@ -61,7 +77,7 @@ const JoinPage = () => {
       </div>
       <div className="flex flex-col gap-y-4 items-center justify-center max-w-md">
         <div className="flex flex-col gap-y-2 items-center justify-center">
-          <h1 className="text-2xl font-bold">Join {data?.name}</h1>
+          <h1 className="text-2xl font-bold">Join {data.name}</h1>
           <p className="text-md text-muted-foreground">
             Enter the workspace invite code to continue
           </p>
