@@ -6,7 +6,7 @@ import { useWorkspaceId } from "@/hooks/use-workspace-id";
 import { differenceInMinutes, format, isToday, isYesterday } from "./date-utils";
 import { Message } from "@/components/message";
 import { Id } from "../../convex/_generated/dataModel";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader, ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChannelHero } from "@/components/channel-hero";
@@ -43,9 +43,27 @@ export const MessageList = ({
     parentMessageId,
   });
   const [editingId, setEditingId] = useState<Id<"messages"> | null>(null);
+  const topRef = useRef<HTMLDivElement | null>(null);
 
   const canLoadMore = status === "CanLoadMore";
   const isLoadingMore = status === "LoadingMore";
+
+  useEffect(() => {
+    const el = topRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting && canLoadMore) {
+          loadMore();
+        }
+      },
+      { threshold: 1.0 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [canLoadMore, loadMore]);
 
   const groupedMessages = (results ?? []).reduce(
     (groups, message) => {
@@ -114,23 +132,7 @@ export const MessageList = ({
           })}
         </div>
       ))}
-      <div
-        className="h-1"
-        ref={(el) => {
-          if (el) {
-            const observer = new IntersectionObserver(
-              ([entry]) => {
-                if (entry?.isIntersecting && canLoadMore) {
-                  loadMore();
-                }
-              },
-              { threshold: 1.0 },
-            );
-            observer.observe(el);
-            return () => observer.disconnect();
-          }
-        }}
-      />
+      <div className="h-1" ref={topRef} />
       {isLoadingMore && (
         <div className="text-center my-2 relative">
           <hr className="absolute top-1/2 left-0 right-0 border-t border-gray-300" />

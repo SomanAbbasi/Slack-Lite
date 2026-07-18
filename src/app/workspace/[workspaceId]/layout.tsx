@@ -24,7 +24,7 @@ const WorkspaceIdLayout = ({ children }: WorkspaceIdLayoutProps) => {
   const showPanel = !!parentMessageId || !!profileMemberId;
 
   return (
-    <div className="h-full">
+    <div className="h-full overflow-hidden">
       <Toolbar />
       <div className="flex h-[calc(100vh-40px)] overflow-hidden">
         <Sidebar />
@@ -34,24 +34,42 @@ const WorkspaceIdLayout = ({ children }: WorkspaceIdLayoutProps) => {
           autoSave="slack-lite-workspace-layout"
         >
           <ResizablePanel
-            defaultSize={20}
-            minSize={12}
+            id="workspace-sidebar"
+            defaultSize={22}
+            minSize={15}
+            maxSize={35}
             className="bg-[#5E2C5F] min-w-0"
           >
             <WorkspaceSidebar />
           </ResizablePanel>
           <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={80} minSize={20} className="min-w-0">
+          <ResizablePanel
+            id="workspace-main"
+            defaultSize={78}
+            minSize={40}
+            className="min-w-0"
+          >
             {showPanel ? (
               <ResizablePanelGroup
                 orientation="horizontal"
                 autoSave="slack-lite-thread-layout"
+                className="h-full"
               >
-                <ResizablePanel minSize={20} defaultSize={60}>
+                <ResizablePanel
+                  id="main-content"
+                  minSize={30}
+                  defaultSize={60}
+                  className="min-w-0"
+                >
                   {children}
                 </ResizablePanel>
                 <ResizableHandle withHandle />
-                <ResizablePanel minSize={20} defaultSize={40}>
+                <ResizablePanel
+                  id="side-panel"
+                  minSize={25}
+                  defaultSize={40}
+                  className="min-w-0 border-l"
+                >
                   {parentMessageId ? (
                     <Thread />
                   ) : profileMemberId ? (
@@ -60,7 +78,7 @@ const WorkspaceIdLayout = ({ children }: WorkspaceIdLayoutProps) => {
                 </ResizablePanel>
               </ResizablePanelGroup>
             ) : (
-              children
+              <div className="h-full min-w-0">{children}</div>
             )}
           </ResizablePanel>
         </ResizablePanelGroup>
