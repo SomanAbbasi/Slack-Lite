@@ -92,7 +92,11 @@ export const get = query({
     for (const member of members) {
       const workspace = await ctx.db.get(member.workspaceId);
       if (workspace) {
-        workspaces.push(workspace);
+        // Never expose invite codes in the workspace list.
+        workspaces.push({
+          ...workspace,
+          joinCode: "",
+        });
       }
     }
 
@@ -144,7 +148,20 @@ export const getById = query({
     if (!member) {
       return null;
     }
-    return await ctx.db.get(args.id);
+    const workspace = await ctx.db.get(args.id);
+    if (!workspace) {
+      return null;
+    }
+
+    // Only admins receive the live join code for inviting people.
+    if (member.role !== "admin") {
+      return {
+        ...workspace,
+        joinCode: "",
+      };
+    }
+
+    return workspace;
   },
 });
 

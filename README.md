@@ -80,3 +80,5 @@ Open [http://localhost:3000](http://localhost:3000).
 
 - Node `>=20.9 <23` is required (see `.nvmrc`)
 - Use the npm lockfile (`package-lock.json`) as the source of truth
+- Keep both terminals running: `npm run convex:dev` and `npm run dev`
+- Auth requires `SITE_URL` (and `AUTH_SECRET`) on the Convex deployment; `CONVEX_SITE_URL` is set automatically by Convex
