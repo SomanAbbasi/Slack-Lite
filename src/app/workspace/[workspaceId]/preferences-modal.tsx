@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { ConfirmModal } from "@/components/confirm-modal";
 import { useRemoveWorkspace } from "@/features/auth/workspaces/api/use-remove-workspace";
 import { useUpdateWorkspace } from "@/features/auth/workspaces/api/use-update-workspace";
 import { useWorkspaceId } from "@/hooks/use-workspace-id";
@@ -33,6 +34,7 @@ export const PreferencesModal = ({
   const router = useRouter();
   const [value, setValue] = useState(initialValue);
   const [editOpen, setEditOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const { mutate: updateWorkspace, isPending: isUpdatingWorkspace } =
     useUpdateWorkspace();
@@ -65,6 +67,8 @@ export const PreferencesModal = ({
       {
         onSuccess: () => {
           toast.success("Workspace removed");
+          setConfirmOpen(false);
+          setOpen(false);
           router.replace("/");
         },
         onError: (error) => {
@@ -100,7 +104,7 @@ export const PreferencesModal = ({
             <button
               type="button"
               disabled={isRemovingWorkspace}
-              onClick={handleRemove}
+              onClick={() => setConfirmOpen(true)}
               className="flex items-center gap-x-2 px-5 py-4 bg-white rounded-lg border cursor-pointer hover:bg-gray-50 text-rose-600 disabled:opacity-50"
             >
               <TrashIcon className="size-4" />
@@ -128,7 +132,11 @@ export const PreferencesModal = ({
             />
             <DialogFooter>
               <DialogClose asChild>
-                <Button type="button" variant="outline" disabled={isUpdatingWorkspace}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isUpdatingWorkspace}
+                >
                   Cancel
                 </Button>
               </DialogClose>
@@ -137,6 +145,17 @@ export const PreferencesModal = ({
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmModal
+        open={confirmOpen}
+        setOpen={setConfirmOpen}
+        title="Delete this workspace?"
+        description="This permanently deletes the workspace, channels, messages, and memberships. This cannot be undone."
+        confirmLabel="Delete workspace"
+        variant="destructive"
+        isPending={isRemovingWorkspace}
+        onConfirm={handleRemove}
+      />
     </>
   );
 };

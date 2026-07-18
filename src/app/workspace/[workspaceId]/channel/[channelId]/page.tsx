@@ -32,11 +32,16 @@ const ChannelIdPage = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <ChannelHeader title={channel.name} />
+      <ChannelHeader
+        title={channel.name}
+        topic={channel.topic}
+        description={channel.description}
+      />
       <MessageList
         channelId={channel._id}
         channelName={channel.name}
         channelCreationTime={channel._creationTime}
+        channelTopic={channel.topic}
       />
       <ChatInput placeholder={`Message # ${channel.name}`} channelId={channelId} />
     </div>

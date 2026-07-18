@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { auth } from "./auth";
 import { v } from "convex/values";
+import { deleteMessageCascade } from "./lib";
 
 const MIN_CHANNEL_NAME = 3;
 const MAX_CHANNEL_NAME = 80;
@@ -123,14 +124,19 @@ export const get = query({
     return await ctx.db
       .query("channels")
       .withIndex("by_workspace_id", (q) => q.eq("workspaceId", args.workspaceId))
-      .collect();
+      .collect()
+      .then((channels) =>
+        channels.sort((a, b) => a.name.localeCompare(b.name)),
+      );
   },
 });
 
 export const update = mutation({
   args: {
     id: v.id("channels"),
-    name: v.string(),
+    name: v.optional(v.string()),
+    topic: v.optional(v.string()),
+    description: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await auth.getUserId(ctx);
@@ -154,20 +160,44 @@ export const update = mutation({
       throw new Error("Forbidden");
     }
 
-    const name = normalizeChannelName(args.name);
+    const patch: {
+      name?: string;
+      topic?: string;
+      description?: string;
+    } = {};
 
-    const existing = await ctx.db
-      .query("channels")
-      .withIndex("by_workspace_id_name", (q) =>
-        q.eq("workspaceId", channel.workspaceId).eq("name", name),
-      )
-      .unique();
+    if (args.name !== undefined) {
+      const name = normalizeChannelName(args.name);
+      const existing = await ctx.db
+        .query("channels")
+        .withIndex("by_workspace_id_name", (q) =>
+          q.eq("workspaceId", channel.workspaceId).eq("name", name),
+        )
+        .unique();
 
-    if (existing && existing._id !== args.id) {
-      throw new Error("A channel with this name already exists");
+      if (existing && existing._id !== args.id) {
+        throw new Error("A channel with this name already exists");
+      }
+      patch.name = name;
     }
 
-    await ctx.db.patch(args.id, { name });
+    if (args.topic !== undefined) {
+      const topic = args.topic.trim();
+      if (topic.length > 250) {
+        throw new Error("Topic must be 250 characters or fewer");
+      }
+      patch.topic = topic;
+    }
+
+    if (args.description !== undefined) {
+      const description = args.description.trim();
+      if (description.length > 1000) {
+        throw new Error("Description must be 1000 characters or fewer");
+      }
+      patch.description = description;
+    }
+
+    await ctx.db.patch(args.id, patch);
     return args.id;
   },
 });
@@ -198,23 +228,28 @@ export const remove = mutation({
       throw new Error("Forbidden");
     }
 
+    if (channel.name === "general") {
+      throw new Error("Cannot delete the general channel");
+    }
+
+    const channels = await ctx.db
+      .query("channels")
+      .withIndex("by_workspace_id", (q) =>
+        q.eq("workspaceId", channel.workspaceId),
+      )
+      .collect();
+
+    if (channels.length <= 1) {
+      throw new Error("Cannot delete the last channel in a workspace");
+    }
+
     const messages = await ctx.db
       .query("messages")
       .withIndex("by_channel_id", (q) => q.eq("channelId", args.id))
       .collect();
 
     for (const message of messages) {
-      const reactions = await ctx.db
-        .query("reactions")
-        .withIndex("by_message_id", (q) => q.eq("messageId", message._id))
-        .collect();
-      for (const reaction of reactions) {
-        await ctx.db.delete(reaction._id);
-      }
-      if (message.image) {
-        await ctx.storage.delete(message.image);
-      }
-      await ctx.db.delete(message._id);
+      await deleteMessageCascade(ctx, message);
     }
 
     await ctx.db.delete(args.id);

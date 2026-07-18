@@ -22,6 +22,8 @@ const schema = defineSchema({
   channels: defineTable({
     name: v.string(),
     workspaceId: v.id("workspaces"),
+    topic: v.optional(v.string()),
+    description: v.optional(v.string()),
   })
     .index("by_workspace_id", ["workspaceId"])
     .index("by_workspace_id_name", ["workspaceId", "name"]),
