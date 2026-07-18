@@ -1,13 +1,11 @@
 import { useGetWorkspace } from "@/features/auth/workspaces/api/use-get-workspace";
 import { useCurrentMember } from "@/features/members/user-current-member";
-import { useWorkspaceId } from "@/hooks/use-workspace-id"
-import { AlertTriangle, HashIcon, Loader, MessageSquareText, SendHorizonal, Sidebar } from "lucide-react";
+import { useWorkspaceId } from "@/hooks/use-workspace-id";
+import { AlertTriangle, HashIcon, Loader, MessageSquareText, SendHorizonal } from "lucide-react";
 import { WorkspaceHeader } from "./workspace-header";
 import { SidebarItem } from "../sidebar-items";
 import { useGetChannels } from "@/features/channels/api/use-get-channels";
-import { internalMutation } from "../../../../convex/_generated/server";
 import { WorkspaceSection } from "./workspace-section";
-import { current } from "../../../../convex/memebers";
 import { useGetMembers } from "@/features/members/use-get-members";
 import { UserItem } from "./user-item";
 import { useCreateChannelModal } from "@/features/channels/store/use-create-channel-modal";
