@@ -1,34 +1,25 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
-
-import {
-    CreateWorkspaceModal
-} from "@/features/auth/workspaces/components/create-workspace-modal";
+import { CreateWorkspaceModal } from "@/features/auth/workspaces/components/create-workspace-modal";
 import { CreateChannelModal } from "@/features/channels/components/create-channel-modal";
-
-
+import { DmPickerModal } from "@/features/conversations/components/dm-picker-modal";
 
 export const Modals = () => {
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-    if (!mounted) {
-        return null;
-    }
+  if (!mounted) {
+    return null;
+  }
 
-
-    return (
-        <>
-            <CreateChannelModal />
-
-            <CreateWorkspaceModal />
-
-        </>
-
-
-    )
+  return (
+    <>
+      <CreateChannelModal />
+      <CreateWorkspaceModal />
+      <DmPickerModal />
+    </>
+  );
 };

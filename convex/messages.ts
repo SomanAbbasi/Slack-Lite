@@ -1,7 +1,12 @@
 import { v } from "convex/values";
 import { mutation, query, QueryCtx } from "./_generated/server";
 import { Doc, Id } from "./_generated/dataModel";
-import { getAuthUserIdOrThrow, getMember } from "./lib";
+import {
+  deleteMessageCascade,
+  getAuthUserIdOrThrow,
+  getMember,
+  isConversationParticipant,
+} from "./lib";
 import { paginationOptsValidator } from "convex/server";
 
 const populateUser = (ctx: QueryCtx, userId: Id<"users">) => {
@@ -126,15 +131,37 @@ async function enrichMessages(
         const member = await getCachedMember(message.memberId);
         const user = member ? await getCachedUser(member.userId) : null;
 
-        if (!member || !user) {
-          return null;
-        }
-
         const reactions = await populateReactions(ctx, message._id);
         const thread = await populateThread(ctx, message._id);
         const image = message.image
           ? await ctx.storage.getUrl(message.image)
           : undefined;
+
+        if (!member || !user) {
+          return {
+            ...message,
+            image,
+            member: member ?? {
+              _id: message.memberId,
+              _creationTime: message._creationTime,
+              userId: "" as Id<"users">,
+              workspaceId: message.workspaceId,
+              role: "member" as const,
+            },
+            user: user ?? {
+              _id: "" as Id<"users">,
+              _creationTime: message._creationTime,
+              name: "Former member",
+              image: undefined,
+              email: undefined,
+            },
+            reactions: formatReactions(reactions, currentMemberId),
+            threadCount: thread.count,
+            threadImage: thread.image,
+            threadName: thread.name,
+            threadTimestamp: thread.timestamp,
+          };
+        }
 
         return {
           ...message,
@@ -185,6 +212,28 @@ export const create = mutation({
         throw new Error("Parent message not found");
       }
       conversationId = parentMessage.conversationId;
+    }
+
+    if (args.channelId) {
+      const channel = await ctx.db.get(args.channelId);
+      if (!channel || channel.workspaceId !== args.workspaceId) {
+        throw new Error("Channel not found");
+      }
+    }
+
+    if (conversationId) {
+      const conversation = await ctx.db.get(conversationId);
+      if (
+        !conversation ||
+        conversation.workspaceId !== args.workspaceId ||
+        !isConversationParticipant(conversation, member._id)
+      ) {
+        throw new Error("Unauthorized");
+      }
+    }
+
+    if (!args.channelId && !conversationId) {
+      throw new Error("Message must belong to a channel or conversation");
     }
 
     const messageId = await ctx.db.insert("messages", {
@@ -300,29 +349,7 @@ export const remove = mutation({
       throw new Error("Unauthorized");
     }
 
-    const reactions = await ctx.db
-      .query("reactions")
-      .withIndex("by_message_id", (q) => q.eq("messageId", args.id))
-      .collect();
-
-    for (const reaction of reactions) {
-      await ctx.db.delete(reaction._id);
-    }
-
-    const replies = await ctx.db
-      .query("messages")
-      .withIndex("by_parent_message_id", (q) => q.eq("parentMessageId", args.id))
-      .collect();
-
-    for (const reply of replies) {
-      await ctx.db.delete(reply._id);
-    }
-
-    if (message.image) {
-      await ctx.storage.delete(message.image);
-    }
-
-    await ctx.db.delete(args.id);
+    await deleteMessageCascade(ctx, message);
     return args.id;
   },
 });
@@ -341,6 +368,16 @@ export const getById = query({
     const currentMember = await getMember(ctx, message.workspaceId, userId);
     if (!currentMember) {
       return null;
+    }
+
+    if (message.conversationId) {
+      const conversation = await ctx.db.get(message.conversationId);
+      if (
+        !conversation ||
+        !isConversationParticipant(conversation, currentMember._id)
+      ) {
+        return null;
+      }
     }
 
     const member = await populateMember(ctx, message.memberId);
@@ -424,7 +461,7 @@ export const get = query({
         return { page: [], isDone: true, continueCursor: "" };
       }
       const member = await getMember(ctx, conversation.workspaceId, userId);
-      if (!member) {
+      if (!member || !isConversationParticipant(conversation, member._id)) {
         return { page: [], isDone: true, continueCursor: "" };
       }
 
@@ -480,6 +517,17 @@ export const search = query({
     for (const message of messages) {
       if (!message.body.toLowerCase().includes(q)) continue;
 
+      // Never expose private DM bodies to non-participants.
+      if (message.conversationId) {
+        const conversation = await ctx.db.get(message.conversationId);
+        if (
+          !conversation ||
+          !isConversationParticipant(conversation, member._id)
+        ) {
+          continue;
+        }
+      }
+
       let messageMember = memberCache.get(message.memberId);
       if (messageMember === undefined) {
         messageMember = await populateMember(ctx, message.memberId);
@@ -504,5 +552,68 @@ export const search = query({
     }
 
     return matched;
+  },
+});
+
+export const getThreads = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserIdOrThrow(ctx);
+    const member = await getMember(ctx, args.workspaceId, userId);
+    if (!member) {
+      return [];
+    }
+
+    const replies = await ctx.db
+      .query("messages")
+      .withIndex("by_workspace_id", (q) =>
+        q.eq("workspaceId", args.workspaceId),
+      )
+      .order("desc")
+      .take(200);
+
+    const parentIds = new Set<Id<"messages">>();
+    for (const reply of replies) {
+      if (reply.parentMessageId) {
+        parentIds.add(reply.parentMessageId);
+      }
+    }
+
+    const threads = [];
+    for (const parentId of parentIds) {
+      const parent = await ctx.db.get(parentId);
+      if (!parent || parent.parentMessageId) continue;
+
+      if (parent.conversationId) {
+        const conversation = await ctx.db.get(parent.conversationId);
+        if (
+          !conversation ||
+          !isConversationParticipant(conversation, member._id)
+        ) {
+          continue;
+        }
+      }
+
+      const parentMember = await populateMember(ctx, parent.memberId);
+      const parentUser = parentMember
+        ? await populateUser(ctx, parentMember.userId)
+        : null;
+      const thread = await populateThread(ctx, parent._id);
+
+      threads.push({
+        ...parent,
+        userName: parentUser?.name ?? "Former member",
+        userImage: parentUser?.image,
+        threadCount: thread.count,
+        threadTimestamp: thread.timestamp,
+        threadName: thread.name,
+      });
+
+      if (threads.length >= 40) break;
+    }
+
+    return threads.sort((a, b) => b.threadTimestamp - a.threadTimestamp);
   },
 });
