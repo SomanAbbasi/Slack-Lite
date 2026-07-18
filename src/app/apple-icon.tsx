@@ -17,14 +17,33 @@ export default function AppleIcon() {
           alignItems: "center",
           justifyContent: "center",
           background: "#4A154B",
-          borderRadius: 36,
-          color: "white",
-          fontSize: 110,
-          fontWeight: 700,
-          fontFamily: "Arial, sans-serif",
+          borderRadius: 40,
+          position: "relative",
         }}
       >
-        #
+        <div
+          style={{
+            color: "white",
+            fontSize: 110,
+            fontWeight: 800,
+            fontFamily: "Georgia, Times New Roman, serif",
+            letterSpacing: "-0.04em",
+            lineHeight: 1,
+          }}
+        >
+          S
+        </div>
+        <div
+          style={{
+            position: "absolute",
+            top: 28,
+            right: 28,
+            width: 28,
+            height: 28,
+            borderRadius: 999,
+            background: "#ECB22E",
+          }}
+        />
       </div>
     ),
     { ...size },

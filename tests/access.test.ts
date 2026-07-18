@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  buildInviteLink,
   canDeleteChannel,
   isConversationParticipant,
   isSafeReturnTo,
+  isValidConvexId,
+  normalizeJoinCode,
   shouldIncludeMessageInSearch,
 } from "../src/lib/access.ts";
 
@@ -41,4 +44,29 @@ test("DM participant checks keep search private", () => {
     shouldIncludeMessageInSearch({ conversation: null, memberId: "c" }),
     true,
   );
+});
+
+test("isValidConvexId rejects polluted invite paste values", () => {
+  assert.equal(isValidConvexId("k97cyxrsc4h80118agc215hek18788k8"), true);
+  assert.equal(
+    isValidConvexId("k97cyxrsc4h80118agc215hek18788k8%20Code%3A%20123456"),
+    false,
+  );
+  assert.equal(
+    isValidConvexId("k97cyxrsc4h80118agc215hek18788k8 Code: 123456"),
+    false,
+  );
+});
+
+test("buildInviteLink keeps code in query string only", () => {
+  const link = buildInviteLink(
+    "http://localhost:3000",
+    "k97cyxrsc4h80118agc215hek18788k8",
+    "AB12CD34",
+  );
+  assert.equal(
+    link,
+    "http://localhost:3000/join/k97cyxrsc4h80118agc215hek18788k8?code=AB12CD34",
+  );
+  assert.equal(normalizeJoinCode(" ab-12 cd "), "AB12CD");
 });

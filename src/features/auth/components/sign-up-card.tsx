@@ -12,6 +12,7 @@ import { SignInFlow } from './types';
 import { Check, Eye, EyeOff, TriangleAlert, X } from 'lucide-react';
 import { useAuthActions } from "@convex-dev/auth/react";
 import { getAuthErrorMessage, getProviderErrorMessage } from '../auth-error';
+import { SlackLiteMark } from "@/components/brand";
 
 
 interface SignUpCardProps {
@@ -113,7 +114,10 @@ export const SignUpCard = ({ setState }: SignUpCardProps) => {
     return (
         <Card className='w-full p-8'>
             <CardHeader>
-                <div className='text-sm font-semibold tracking-tight text-muted-foreground'>Slack Lite</div>
+                <div className='text-sm font-semibold tracking-tight text-muted-foreground flex items-center gap-2'>
+                    <SlackLiteMark className="size-6" />
+                    Slack-Lite
+                </div>
                 <CardTitle className='text-2xl'>Create your account</CardTitle>
                 <CardDescription className='text-sm'>Sign up with email, or continue with a provider.</CardDescription>
 

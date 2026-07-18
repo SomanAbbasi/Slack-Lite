@@ -18,13 +18,32 @@ export default function Icon() {
           justifyContent: "center",
           background: "#4A154B",
           borderRadius: 8,
-          color: "white",
-          fontSize: 22,
-          fontWeight: 700,
-          fontFamily: "Arial, sans-serif",
+          position: "relative",
         }}
       >
-        #
+        <div
+          style={{
+            color: "white",
+            fontSize: 20,
+            fontWeight: 800,
+            fontFamily: "Georgia, Times New Roman, serif",
+            letterSpacing: "-0.04em",
+            lineHeight: 1,
+          }}
+        >
+          S
+        </div>
+        <div
+          style={{
+            position: "absolute",
+            top: 5,
+            right: 5,
+            width: 6,
+            height: 6,
+            borderRadius: 999,
+            background: "#ECB22E",
+          }}
+        />
       </div>
     ),
     { ...size },

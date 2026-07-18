@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     default: "Slack-Lite",
     template: "%s · Slack-Lite",
   },
-  description: "Realtime team messaging workspaces inspired by Slack",
+  description: "Realtime team messaging for your workspace",
   applicationName: "Slack-Lite",
   icons: {
     icon: [{ url: "/icon", type: "image/png" }],
