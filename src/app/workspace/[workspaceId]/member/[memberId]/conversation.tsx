@@ -7,6 +7,7 @@ import { Loader } from "lucide-react";
 import { Header } from "./header";
 import { ChatInput } from "./chat-input";
 import { MessageList } from "@/components/message-list";
+import { useProfileMemberId } from "@/features/members/store/use-profile-member-id";
 
 interface ConversationProps {
   id: Id<"conversations">;
@@ -14,6 +15,7 @@ interface ConversationProps {
 
 export const Conversation = ({ id }: ConversationProps) => {
   const memberId = useMemberId();
+  const [, setProfileMemberId] = useProfileMemberId();
   const { data: member, isLoading: memberLoading } = useGetMember({
     id: memberId,
   });
@@ -31,7 +33,7 @@ export const Conversation = ({ id }: ConversationProps) => {
       <Header
         memberName={member?.user.name}
         memberImage={member?.user.image}
-        onClick={() => {}}
+        onClick={() => setProfileMemberId(memberId)}
       />
       <MessageList
         memberName={member?.user.name}

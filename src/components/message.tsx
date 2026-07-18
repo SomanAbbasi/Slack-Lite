@@ -19,6 +19,7 @@ import { useToggleReaction } from "@/features/reactions/api/use-toggle-reaction"
 import { useRemoveMessage } from "@/features/messages/api/use-remove-message";
 import { useUpdateMessage } from "@/features/messages/api/use-update-message";
 import { useParentMessageId } from "@/features/messages/store/use-parent-message";
+import { useProfileMemberId } from "@/features/members/store/use-profile-member-id";
 import { toast } from "sonner";
 import { useState } from "react";
 import {
@@ -78,6 +79,7 @@ export const Message = ({
   threadTimestamp,
 }: MessageProps) => {
   const [_, setParentMessageId] = useParentMessageId();
+  const [, setProfileMemberId] = useProfileMemberId();
   const { mutate: toggleReaction } = useToggleReaction();
   const { mutate: removeMessage, isPending: isRemovingMessage } =
     useRemoveMessage();
@@ -226,7 +228,7 @@ export const Message = ({
           <div className="flex flex-col w-full overflow-hidden">
             <div className="text-sm">
               <button
-                onClick={() => {}}
+                onClick={() => setProfileMemberId(memberId)}
                 className="font-bold text-primary hover:underline"
               >
                 {authorName}

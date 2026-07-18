@@ -30,12 +30,15 @@ export const InviteModal = ({
   const workspaceId = useWorkspaceId();
   const { mutate, isPending } = useNewJoinCode();
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     const inviteLink = `${window.location.origin}/join/${workspaceId}`;
-    navigator.clipboard
-      .writeText(inviteLink)
-      .then(() => toast.success("Invite link copied to clipboard"))
-      .catch(() => toast.error("Failed to copy invite link"));
+    const payload = `Join ${name} on Slack-Lite\nLink: ${inviteLink}\nCode: ${joinCode}`;
+    try {
+      await navigator.clipboard.writeText(payload);
+      toast.success("Invite link and code copied");
+    } catch {
+      toast.error("Failed to copy invite details");
+    }
   };
 
   const handleNewCode = () => {
@@ -66,7 +69,7 @@ export const InviteModal = ({
             {joinCode}
           </p>
           <Button onClick={handleCopy} variant="ghost" size="sm">
-            Copy link
+            Copy invite details
             <CopyIcon className="size-4 ml-2" />
           </Button>
         </div>
