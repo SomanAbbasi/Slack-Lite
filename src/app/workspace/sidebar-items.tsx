@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { useWorkspaceId } from "@/hooks/use-workspace-id";
 import Link from "next/link";
@@ -6,6 +8,7 @@ import { IconType } from "react-icons/lib";
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 import { usePathname } from "next/navigation";
+import { toast } from "sonner";
 
 const sidebarItemVariants = cva(
   "flex items-center gap-2 justify-start font-normal h-7 px-[18px] text-sm overflow-hidden rounded-md",
@@ -38,16 +41,31 @@ export const SidebarItem = ({
   const workspaceId = useWorkspaceId();
   const pathname = usePathname();
 
+  if (id === "drafts") {
+    return (
+      <Button
+        type="button"
+        variant="transparent"
+        size="sm"
+        className={cn(sidebarItemVariants({ variant: "default" }))}
+        onClick={() => toast.message("Drafts coming soon")}
+      >
+        <Icon className="size-3.5 shrink-0" />
+        <span className="text-sm truncate">{label}</span>
+      </Button>
+    );
+  }
+
   const href =
-    id === "threads" || id === "drafts"
-      ? `/workspace/${workspaceId}`
+    id === "threads"
+      ? `/workspace/${workspaceId}/threads`
       : `/workspace/${workspaceId}/channel/${id}`;
 
   const isActive =
     variant === "active" ||
-    (id !== "threads" &&
-      id !== "drafts" &&
-      pathname.includes(`/channel/${id}`));
+    (id === "threads"
+      ? pathname.includes("/threads")
+      : pathname.includes(`/channel/${id}`));
 
   return (
     <Button

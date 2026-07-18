@@ -4,46 +4,23 @@ import { UserButton } from "@/features/auth/components/user-button";
 import { WorkSpaceSwitcher } from "./workspace-switcher";
 import { SidebarButton } from "./sidebar-button";
 import { BellIcon, Home, MessagesSquare, MoreHorizontal } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useWorkspaceId } from "@/hooks/use-workspace-id";
 import { useState } from "react";
 import { ActivityModal } from "./activity-modal";
-import { useGetMembers } from "@/features/members/use-get-members";
-import { useCurrentMember } from "@/features/members/user-current-member";
+import { useGoToWorkspaceHome } from "@/hooks/use-workspace-home";
 import { toast } from "sonner";
+import { useDmPickerModal } from "@/features/conversations/store/use-dm-picker-modal";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
 
 export const Sidebar = () => {
   const pathname = usePathname();
-  const router = useRouter();
   const workspaceId = useWorkspaceId();
   const [activityOpen, setActivityOpen] = useState(false);
-
-  const { data: currentMember, isLoading: currentLoading } = useCurrentMember({
-    workspaceId,
-  });
-  const { data: members, isLoading: membersLoading } = useGetMembers({
-    workspaceId,
-  });
-
-  const openDms = () => {
-    if (currentLoading || membersLoading) {
-      toast.message("Loading members...");
-      return;
-    }
-
-    const otherMember = members?.find(
-      (member) => member._id !== currentMember?._id,
-    );
-
-    if (otherMember) {
-      router.push(`/workspace/${workspaceId}/member/${otherMember._id}`);
-      return;
-    }
-
-    // Fall back to workspace sidebar DM list (same workspace home).
-    router.push(`/workspace/${workspaceId}`);
-    toast.message("Invite someone to start a direct message");
-  };
+  const goHome = useGoToWorkspaceHome();
+  const [, setDmPickerOpen] = useDmPickerModal();
+  const unreadCount = useQuery(api.notifications.unreadCount, { workspaceId });
 
   return (
     <>
@@ -54,22 +31,34 @@ export const Sidebar = () => {
           label="Home"
           isActive={
             pathname.includes(`/workspace/${workspaceId}`) &&
-            !pathname.includes("/member/")
+            !pathname.includes("/member/") &&
+            !pathname.includes("/threads")
           }
-          onClick={() => router.push(`/workspace/${workspaceId}`)}
+          onClick={goHome}
         />
         <SidebarButton
           icon={MessagesSquare}
           label="DMs"
           isActive={pathname.includes("/member/")}
-          onClick={openDms}
+          onClick={() => setDmPickerOpen(true)}
         />
+        <div className="relative">
+          <SidebarButton
+            icon={BellIcon}
+            label="Activity"
+            onClick={() => setActivityOpen(true)}
+          />
+          {!!unreadCount && unreadCount > 0 ? (
+            <span className="absolute -top-0.5 right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-[10px] text-white flex items-center justify-center">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          ) : null}
+        </div>
         <SidebarButton
-          icon={BellIcon}
-          label="Activity"
-          onClick={() => setActivityOpen(true)}
+          icon={MoreHorizontal}
+          label="More"
+          onClick={() => toast.message("More options coming soon")}
         />
-        <SidebarButton icon={MoreHorizontal} label="More" />
         <div className="flex flex-col items-center justify-center gap-y-1 mt-auto">
           <UserButton />
         </div>
