@@ -96,14 +96,35 @@ const formatReactions = (
 
 async function enrichMessages(
   ctx: QueryCtx,
-  userId: Id<"users">,
+  currentMemberId: Id<"members">,
   page: Doc<"messages">[],
 ) {
+  const memberCache = new Map<Id<"members">, Doc<"members"> | null>();
+  const userCache = new Map<Id<"users">, Doc<"users"> | null>();
+
+  const getCachedMember = async (memberId: Id<"members">) => {
+    if (memberCache.has(memberId)) {
+      return memberCache.get(memberId) ?? null;
+    }
+    const member = await populateMember(ctx, memberId);
+    memberCache.set(memberId, member);
+    return member;
+  };
+
+  const getCachedUser = async (userId: Id<"users">) => {
+    if (userCache.has(userId)) {
+      return userCache.get(userId) ?? null;
+    }
+    const user = await populateUser(ctx, userId);
+    userCache.set(userId, user);
+    return user;
+  };
+
   return (
     await Promise.all(
       page.map(async (message) => {
-        const member = await populateMember(ctx, message.memberId);
-        const user = member ? await populateUser(ctx, member.userId) : null;
+        const member = await getCachedMember(message.memberId);
+        const user = member ? await getCachedUser(member.userId) : null;
 
         if (!member || !user) {
           return null;
@@ -111,21 +132,16 @@ async function enrichMessages(
 
         const reactions = await populateReactions(ctx, message._id);
         const thread = await populateThread(ctx, message._id);
-        const currentMember = await getMember(ctx, message.workspaceId, userId);
         const image = message.image
           ? await ctx.storage.getUrl(message.image)
           : undefined;
-
-        if (!currentMember) {
-          return null;
-        }
 
         return {
           ...message,
           image,
           member,
           user,
-          reactions: formatReactions(reactions, currentMember._id),
+          reactions: formatReactions(reactions, currentMemberId),
           threadCount: thread.count,
           threadImage: thread.image,
           threadName: thread.name,
@@ -199,11 +215,8 @@ export const create = mutation({
       }
     }
 
-    const mentionMatches = body.matchAll(/@([a-zA-Z0-9._-]+)/g);
-    for (const match of mentionMatches) {
-      const mentionedName = match[1];
-      if (!mentionedName) continue;
-
+    const mentionMatches = [...body.matchAll(/@([a-zA-Z0-9._-]+)/g)];
+    if (mentionMatches.length > 0) {
       const workspaceMembers = await ctx.db
         .query("members")
         .withIndex("by_workspace_id", (q) =>
@@ -211,21 +224,26 @@ export const create = mutation({
         )
         .collect();
 
-      for (const workspaceMember of workspaceMembers) {
-        if (workspaceMember._id === member._id) continue;
-        const user = await ctx.db.get(workspaceMember.userId);
-        if (!user?.name) continue;
-        if (user.name.toLowerCase() !== mentionedName.toLowerCase()) continue;
+      for (const match of mentionMatches) {
+        const mentionedName = match[1];
+        if (!mentionedName) continue;
 
-        await ctx.db.insert("notifications", {
-          workspaceId: args.workspaceId,
-          userId: workspaceMember.userId,
-          type: "mention",
-          messageId,
-          actorMemberId: member._id,
-          body: "mentioned you",
-          read: false,
-        });
+        for (const workspaceMember of workspaceMembers) {
+          if (workspaceMember._id === member._id) continue;
+          const user = await ctx.db.get(workspaceMember.userId);
+          if (!user?.name) continue;
+          if (user.name.toLowerCase() !== mentionedName.toLowerCase()) continue;
+
+          await ctx.db.insert("notifications", {
+            workspaceId: args.workspaceId,
+            userId: workspaceMember.userId,
+            type: "mention",
+            messageId,
+            actorMemberId: member._id,
+            body: "mentioned you",
+            read: false,
+          });
+        }
       }
     }
 
@@ -396,7 +414,7 @@ export const get = query({
 
       return {
         ...results,
-        page: await enrichMessages(ctx, userId, results.page),
+        page: await enrichMessages(ctx, member._id, results.page),
       };
     }
 
@@ -422,7 +440,7 @@ export const get = query({
 
       return {
         ...results,
-        page: await enrichMessages(ctx, userId, results.page),
+        page: await enrichMessages(ctx, member._id, results.page),
       };
     }
 
@@ -453,15 +471,27 @@ export const search = query({
         idx.eq("workspaceId", args.workspaceId),
       )
       .order("desc")
-      .take(200);
+      .take(100);
 
     const matched = [];
+    const memberCache = new Map<Id<"members">, Doc<"members"> | null>();
+    const userCache = new Map<Id<"users">, Doc<"users"> | null>();
 
     for (const message of messages) {
       if (!message.body.toLowerCase().includes(q)) continue;
-      const messageMember = await populateMember(ctx, message.memberId);
+
+      let messageMember = memberCache.get(message.memberId);
+      if (messageMember === undefined) {
+        messageMember = await populateMember(ctx, message.memberId);
+        memberCache.set(message.memberId, messageMember);
+      }
       if (!messageMember) continue;
-      const user = await populateUser(ctx, messageMember.userId);
+
+      let user = userCache.get(messageMember.userId);
+      if (user === undefined) {
+        user = await populateUser(ctx, messageMember.userId);
+        userCache.set(messageMember.userId, user);
+      }
       if (!user) continue;
 
       matched.push({
@@ -470,7 +500,7 @@ export const search = query({
         member: messageMember,
       });
 
-      if (matched.length >= 25) break;
+      if (matched.length >= 20) break;
     }
 
     return matched;
