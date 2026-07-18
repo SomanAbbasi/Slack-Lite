@@ -8,11 +8,11 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { usePathname } from "next/navigation";
 
 const sidebarItemVariants = cva(
-  "flex items-center gap-2 justify-start font-normal h-7 px-[18px] text-sm overflow-hidden",
+  "flex items-center gap-2 justify-start font-normal h-7 px-[18px] text-sm overflow-hidden rounded-md",
   {
     variants: {
       variant: {
-        default: "text-white",
+        default: "text-[#f9edffcc] hover:bg-white/10 hover:text-white",
         active: "text-[#481349] bg-white/90 hover:bg-white/90",
       },
     },

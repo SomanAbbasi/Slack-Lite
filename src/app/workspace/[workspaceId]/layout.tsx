@@ -31,13 +31,14 @@ const WorkspaceIdLayout = ({ children }: WorkspaceIdLayoutProps) => {
         <ResizablePanelGroup
           orientation="horizontal"
           className="min-w-0 flex-1"
-          autoSave="slack-lite-workspace-layout"
+          autoSave="slack-lite-workspace-layout-v2"
         >
           <ResizablePanel
             id="workspace-sidebar"
-            defaultSize={22}
-            minSize={15}
-            maxSize={35}
+            defaultSize="260px"
+            minSize="200px"
+            maxSize="420px"
+            groupResizeBehavior="preserve-pixel-size"
             className="bg-[#5E2C5F] min-w-0"
           >
             <WorkspaceSidebar />
@@ -45,14 +46,13 @@ const WorkspaceIdLayout = ({ children }: WorkspaceIdLayoutProps) => {
           <ResizableHandle withHandle />
           <ResizablePanel
             id="workspace-main"
-            defaultSize={78}
-            minSize={40}
+            minSize="400px"
             className="min-w-0"
           >
             {showPanel ? (
               <ResizablePanelGroup
                 orientation="horizontal"
-                autoSave="slack-lite-thread-layout"
+                autoSave="slack-lite-thread-layout-v2"
                 className="h-full"
               >
                 <ResizablePanel
