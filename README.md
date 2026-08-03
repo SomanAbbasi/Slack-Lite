@@ -2,6 +2,11 @@
 
 A Slack-style collaboration app built with Next.js 16, React 19, Convex, and Convex Auth.
 
+#Screenshots
+
+<img width="1905" height="1003" alt="image" src="https://github.com/user-attachments/assets/80373cf1-7af9-431f-aa16-4e0eb7c1d52a" />
+
+
 ## Features
 
 - Email/password + Google/GitHub authentication
